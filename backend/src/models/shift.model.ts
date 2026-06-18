@@ -2,6 +2,9 @@ import { DataTypes, Model, type CreationOptional, type InferAttributes, type Inf
 import { sequelize } from '../config/database.js';
 import { ShiftType, type ShiftTypeValue } from '../constants/enums.js';
 
+export type AttendanceStatus = 'NORMAL' | 'LATE' | 'EARLY' | 'LATE_AND_EARLY' | 'ABSENT';
+export type ShiftStatus = 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT';
+
 export class Shift extends Model<InferAttributes<Shift>, InferCreationAttributes<Shift>> {
   declare id: CreationOptional<number>;
   declare employeeId: number;
@@ -10,7 +13,10 @@ export class Shift extends Model<InferAttributes<Shift>, InferCreationAttributes
   declare startTime: string;
   declare endTime: string;
   declare storeId: number;
-  declare status: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN';
+  declare status: ShiftStatus;
+  declare actualStartTime: CreationOptional<string | null>;
+  declare actualEndTime: CreationOptional<string | null>;
+  declare attendanceStatus: CreationOptional<AttendanceStatus | null>;
 }
 
 Shift.init(
@@ -22,7 +28,10 @@ Shift.init(
     startTime: { type: DataTypes.TIME, allowNull: false },
     endTime: { type: DataTypes.TIME, allowNull: false },
     storeId: { type: DataTypes.INTEGER, allowNull: false },
-    status: { type: DataTypes.ENUM('PENDING', 'CONFIRMED', 'CHECKED_IN'), allowNull: false, defaultValue: 'PENDING' }
+    status: { type: DataTypes.ENUM('PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'), allowNull: false, defaultValue: 'PENDING' },
+    actualStartTime: { type: DataTypes.TIME, allowNull: true },
+    actualEndTime: { type: DataTypes.TIME, allowNull: true },
+    attendanceStatus: { type: DataTypes.ENUM('NORMAL', 'LATE', 'EARLY', 'LATE_AND_EARLY', 'ABSENT'), allowNull: true, defaultValue: null }
   },
   { sequelize, tableName: 'shifts' }
 );

@@ -1,4 +1,4 @@
-import { fn, col, literal } from 'sequelize';
+import { fn, col, literal, Op } from 'sequelize';
 import { Employee, Shift, Store, Transaction } from '../models/index.js';
 import { EmployeeStatus, TransactionType } from '../constants/enums.js';
 
@@ -29,11 +29,25 @@ export async function getDashboardSummary() {
     limit: 5
   });
 
+  const nonRestTotal = await Shift.count({ where: { shiftType: { [Op.ne]: 'REST' } } });
+  const checkedIn = await Shift.count({ where: { status: { [Op.in]: ['CHECKED_IN', 'CHECKED_OUT'] } } });
+  const normalCount = await Shift.count({ where: { attendanceStatus: 'NORMAL' } });
+  const lateCount = await Shift.count({ where: { attendanceStatus: { [Op.in]: ['LATE', 'LATE_AND_EARLY'] } } });
+  const earlyCount = await Shift.count({ where: { attendanceStatus: { [Op.in]: ['EARLY', 'LATE_AND_EARLY'] } } });
+
   return {
     metrics: { employeeCount, activeEmployees, pendingShifts, pendingTransactions },
     monthlyFinance,
     topStores,
-    attendance: { checkedIn: await Shift.count({ where: { status: 'CHECKED_IN' } }), total: await Shift.count() },
+    attendance: {
+      total: nonRestTotal,
+      checkedIn,
+      normal: normalCount,
+      late: lateCount,
+      early: earlyCount,
+      absent: Math.max(nonRestTotal - checkedIn, 0),
+      rate: nonRestTotal > 0 ? Math.round((normalCount / nonRestTotal) * 100) : 0
+    },
     todos: [
       { title: '待确认排班', count: pendingShifts },
       { title: '待审核财务记录', count: pendingTransactions },

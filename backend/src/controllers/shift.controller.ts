@@ -33,3 +33,19 @@ export async function autoGenerate(req: Request, res: Response, next: NextFuncti
     next(error);
   }
 }
+
+export async function checkIn(req: Request, res: Response, next: NextFunction) {
+  try {
+    success(res, await shiftService.checkIn(Number(req.params.id)));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function checkOut(req: Request, res: Response, next: NextFunction) {
+  try {
+    success(res, await shiftService.checkOut(Number(req.params.id)));
+  } catch (error) {
+    next(error);
+  }
+}

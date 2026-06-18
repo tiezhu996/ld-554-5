@@ -19,7 +19,18 @@
     </div>
     <div class="grid cols-2 dash-grid">
       <div class="panel"><FinanceChart type="bar" title="收入支出对比" :labels="['1月','2月','3月','4月']" :values="[42,31,52,46]" /></div>
-      <div class="panel"><FinanceChart type="pie" title="员工出勤率" :labels="['已打卡','未打卡']" :values="[attendance.checkedIn, Math.max(attendance.total - attendance.checkedIn, 0)]" /></div>
+      <div class="panel">
+        <h2>员工出勤率</h2>
+        <div class="attendance-summary">
+          <FinanceChart type="pie" title="" :labels="attendanceLabels" :values="attendanceValues" />
+          <div class="attendance-detail">
+            <p>正常出勤：<strong>{{ attendance.normal }}</strong></p>
+            <p>迟到：<strong class="text-danger">{{ attendance.late }}</strong></p>
+            <p>早退：<strong class="text-warning">{{ attendance.early }}</strong></p>
+            <p>未打卡：<strong class="text-muted">{{ attendance.absent }}</strong></p>
+          </div>
+        </div>
+      </div>
       <div class="panel"><FinanceChart type="bar" title="各门店营收 TOP" :labels="topStoreLabels" :values="topStoreValues" /></div>
       <div class="panel">
         <h2>待办事项</h2>
@@ -44,7 +55,14 @@ const metrics = computed(() => [
   { label: '在职员工', value: summary.value.metrics?.activeEmployees ?? 0 },
   { label: '待审核财务', value: summary.value.metrics?.pendingTransactions ?? 0 }
 ]);
-const attendance = computed(() => summary.value.attendance ?? { checkedIn: 0, total: 1 });
+const attendance = computed(() => summary.value.attendance ?? { normal: 0, late: 0, early: 0, absent: 0, total: 1, checkedIn: 0, rate: 0 });
+const attendanceLabels = computed(() => ['正常', '迟到', '早退', '未打卡']);
+const attendanceValues = computed(() => [
+  attendance.value.normal,
+  attendance.value.late,
+  attendance.value.early,
+  attendance.value.absent
+]);
 const todos = computed(() => summary.value.todos ?? []);
 const topStoreLabels = computed(() => (summary.value.topStores ?? []).map((item: any) => item.store?.name ?? `门店 ${item.storeId}`));
 const topStoreValues = computed(() => (summary.value.topStores ?? []).map((item: any) => Number(item.revenue)));
@@ -73,5 +91,29 @@ onMounted(async () => {
 
 .dash-grid {
   margin-top: 18px;
+}
+
+.attendance-summary {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.attendance-detail {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.text-danger {
+  color: #f56c6c;
+}
+
+.text-warning {
+  color: #e6a23c;
+}
+
+.text-muted {
+  color: #909399;
 }
 </style>

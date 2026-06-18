@@ -11,3 +11,11 @@ export function createShift(data: Record<string, unknown>) {
 export function autoGenerateShifts(data: { storeId: number; date: string }) {
   return request.post('/shifts/auto-generate', data);
 }
+
+export function checkInShift(id: number) {
+  return request.post(`/shifts/${id}/check-in`);
+}
+
+export function checkOutShift(id: number) {
+  return request.post(`/shifts/${id}/check-out`);
+}
